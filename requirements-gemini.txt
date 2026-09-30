@@ -1,1 +1,3 @@
-google-genai>=1.0
+# Optional: Gemini on Vertex AI (DETECTION_ENGINE=gemini).
+-r requirements.txt
+google-genai==2.25.0

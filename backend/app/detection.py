@@ -10,20 +10,21 @@ Scans the knowledge catalog and makes four kinds of weak spots visible:
 
 Each finding becomes an issue with a stable id, the date it arose (for the
 time-lapse), and a pressure score based on how much it is actually used.
+
+The engine is pure: it receives a Snapshot and returns candidate issues. It has no
+database access and no global configuration; the conflict judge is injected.
 """
 from __future__ import annotations
 
 import hashlib
-import json
 import math
 import re
-import sqlite3
 from collections import Counter, defaultdict
-from datetime import date, datetime, timedelta, timezone
+from datetime import timedelta
 from itertools import combinations
 
-from . import config, llm
-from .db import split
+from .domain import Snapshot, split
+from .ports import ConflictJudge
 from .textsim import TfIdf, cosine, tokens
 
 DUPLICATE_THRESHOLD = 0.85
@@ -45,32 +46,6 @@ def humanize(subject: str) -> str:
     return " ".join(p.replace("_", " ") for p in parts)
 
 
-def now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
-
-
-def as_of_date(conn: sqlite3.Connection) -> date:
-    row = conn.execute(
-        "SELECT MAX(d) AS d FROM (SELECT MAX(created_at) AS d FROM usage_events "
-        "UNION ALL SELECT MAX(created_at) FROM chats)"
-    ).fetchone()
-    return date.fromisoformat(row["d"][:10]) if row and row["d"] else date.today()
-
-
-# --------------------------------------------------------------------------- loading
-def _load(conn: sqlite3.Connection) -> dict:
-    items = {r["id"]: dict(r) for r in conn.execute("SELECT * FROM items")}
-    claims = defaultdict(list)
-    for r in conn.execute("SELECT * FROM claims"):
-        claims[r["item_id"]].append(dict(r))
-    users = {r["id"]: dict(r) for r in conn.execute("SELECT * FROM users")}
-    topics = [dict(r) for r in conn.execute("SELECT * FROM topics ORDER BY position")]
-    chats = [dict(r) for r in conn.execute("SELECT * FROM chats ORDER BY created_at")]
-    usage = [dict(r) for r in conn.execute("SELECT * FROM usage_events")]
-    return {"items": items, "claims": claims, "users": users, "topics": topics,
-            "chats": chats, "usage": usage}
-
-
 def _active(items: dict) -> list[dict]:
     return [i for i in items.values() if i["state"] == "active"]
 
@@ -87,8 +62,8 @@ def _lineage(items: dict, a: str, b: str) -> bool:
 
 
 # --------------------------------------------------------------------------- detectors
-def detect_conflicts(ctx: dict, use_llm: bool) -> list[dict]:
-    items, claims = ctx["items"], ctx["claims"]
+def detect_conflicts(ctx: Snapshot, judge: ConflictJudge) -> list[dict]:
+    items, claims = ctx.items, ctx.claims
     by_subject = defaultdict(list)
     for item in _active(items):
         for claim in claims[item["id"]]:
@@ -101,15 +76,10 @@ def detect_conflicts(ctx: dict, use_llm: bool) -> list[dict]:
                 continue
             if ca["value"].strip().lower() == cb["value"].strip().lower():
                 continue
-            explanation = None
-            if use_llm:
-                verdict = llm.judge_conflict(
-                    {"title": ia["title"], "text": ca["text"]},
-                    {"title": ib["title"], "text": cb["text"]})
-                if verdict is not None:
-                    contradicts, explanation = verdict
-                    if not contradicts:
-                        continue
+            verdict = judge.judge(ia, ca, ib, cb)
+            if not verdict.contradicts:
+                continue
+            explanation = verdict.explanation
             first, second = sorted([(ia, ca), (ib, cb)], key=lambda p: p[0]["created_at"])
             found.append({
                 "id": fingerprint("conflict", ia["id"], ib["id"], subject),
@@ -127,8 +97,8 @@ def detect_conflicts(ctx: dict, use_llm: bool) -> list[dict]:
     return found
 
 
-def detect_duplicates(ctx: dict) -> list[dict]:
-    items, users = ctx["items"], ctx["users"]
+def detect_duplicates(ctx: Snapshot) -> list[dict]:
+    items, users = ctx.items, ctx.users
     active = _active(items)
     tfidf = TfIdf([i["body"] for i in active])
     found = []
@@ -155,9 +125,9 @@ def detect_duplicates(ctx: dict) -> list[dict]:
     return found
 
 
-def detect_outdated(ctx: dict, as_of: date) -> list[dict]:
-    items, users, usage, chats = ctx["items"], ctx["users"], ctx["usage"], ctx["chats"]
-    today = as_of.isoformat()
+def detect_outdated(ctx: Snapshot) -> list[dict]:
+    items, users, usage, chats = ctx.items, ctx.users, ctx.usage, ctx.chats
+    today = ctx.as_of.isoformat()
     found = []
     for item in items.values():
         reasons = []
@@ -243,10 +213,10 @@ def _cluster_label(questions: list[dict], tfidf: TfIdf) -> str:
     return " · ".join(chosen) or tokens(questions[0]["text"])[0]
 
 
-def detect_missing(ctx: dict) -> list[dict]:
-    items, topics = ctx["items"], ctx["topics"]
+def detect_missing(ctx: Snapshot) -> list[dict]:
+    items, topics = ctx.items, ctx.topics
     active = _active(items)
-    questions = [c for c in ctx["chats"] if "?" in c["text"] and not split(c["cites"])]
+    questions = [c for c in ctx.chats if "?" in c["text"] and not split(c["cites"])]
     if not questions:
         return []
     tfidf = TfIdf([i["body"] for i in active] + [q["text"] for q in questions])
@@ -311,9 +281,9 @@ def detect_missing(ctx: dict) -> list[dict]:
     return found
 
 
-# --------------------------------------------------------------------------- pressure
-def _pressure(issue: dict, ctx: dict, as_of: date) -> dict:
-    start = (as_of - timedelta(days=config.PRESSURE_WINDOW_DAYS)).isoformat()
+# --------------------------------------------------------------------------- engine
+def pressure(issue: dict, ctx: Snapshot, window_days: int) -> dict:
+    start = (ctx.as_of - timedelta(days=window_days)).isoformat()
     if issue["type"] == "missing":
         qs = issue["details"]["questions"]
         uses = len(qs)
@@ -321,7 +291,7 @@ def _pressure(issue: dict, ctx: dict, as_of: date) -> dict:
         people = len({q["author_id"] for q in qs})
     else:
         ids = set(issue["item_ids"])
-        events = [u for u in ctx["usage"] if u["item_id"] in ids and u["created_at"] >= start]
+        events = [u for u in ctx.usage if u["item_id"] in ids and u["created_at"] >= start]
         uses = len(events)
         clients = len({u["client_id"] for u in events})
         people = len({u["user_id"] for u in events})
@@ -330,51 +300,23 @@ def _pressure(issue: dict, ctx: dict, as_of: date) -> dict:
             "pressure": round(100 * (1 - math.exp(-raw / 45)))}
 
 
-# --------------------------------------------------------------------------- run
-def run(conn: sqlite3.Connection, actor_id: str | None = None) -> dict:
-    ctx = _load(conn)
-    as_of = as_of_date(conn)
-    use_llm = llm.available()
+class DetectionEngine:
+    def __init__(self, judge: ConflictJudge, pressure_window_days: int = 90):
+        self.judge = judge
+        self.window = pressure_window_days
 
-    candidates = (detect_conflicts(ctx, use_llm) + detect_duplicates(ctx)
-                  + detect_outdated(ctx, as_of) + detect_missing(ctx))
-    for c in candidates:
-        c.update(_pressure(c, ctx, as_of))
+    @property
+    def name(self) -> str:
+        return self.judge.name
 
-    existing = {r["id"]: dict(r) for r in conn.execute("SELECT * FROM issues")}
-    stamp = now_iso()
-    seen = set()
-    for c in candidates:
-        seen.add(c["id"])
-        values = (c["type"], c["country"], c["topic"], c["title"], c["explanation"],
-                  json.dumps(c["details"]), ",".join(c["item_ids"]), c["arose_at"],
-                  c["pressure"], c["uses"], c["clients"], c["people"])
-        prev = existing.get(c["id"])
-        if prev is None:
-            conn.execute(
-                "INSERT INTO issues (type, country, topic, title, explanation, details, item_ids, "
-                "arose_at, pressure, uses, clients, people, id, detected_at, state) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'detected')", (*values, c["id"], stamp))
-            conn.execute("INSERT INTO audit_log (at, actor_id, action, target, detail) VALUES (?,?,?,?,?)",
-                         (stamp, actor_id, "issue.detected", c["id"], c["title"]))
-        else:
-            conn.execute(
-                "UPDATE issues SET type=?, country=?, topic=?, title=?, explanation=?, details=?, "
-                "item_ids=?, arose_at=?, pressure=?, uses=?, clients=?, people=? WHERE id=?",
-                (*values, c["id"]))
-            if prev["state"] == "resolved":  # it came back: reopen
-                conn.execute("UPDATE issues SET state='detected', resolved_at=NULL, resolved_by=NULL, "
-                             "resolution=NULL WHERE id=?", (c["id"],))
-                conn.execute("INSERT INTO audit_log (at, actor_id, action, target, detail) VALUES (?,?,?,?,?)",
-                             (stamp, actor_id, "issue.reopened", c["id"], "Condition detected again"))
+    def detect(self, snapshot: Snapshot) -> list[dict]:
+        candidates = (detect_conflicts(snapshot, self.judge) + detect_duplicates(snapshot)
+                      + detect_outdated(snapshot) + detect_missing(snapshot))
+        for c in candidates:
+            c.update(pressure(c, snapshot, self.window))
+        return candidates
 
-    for issue_id, prev in existing.items():
-        if issue_id not in seen and prev["state"] in ("detected", "assigned"):
-            conn.execute("UPDATE issues SET state='resolved', resolved_at=?, resolution=? WHERE id=?",
-                         (stamp, "Condition cleared after a lifecycle change.", issue_id))
-            conn.execute("INSERT INTO audit_log (at, actor_id, action, target, detail) VALUES (?,?,?,?,?)",
-                         (stamp, actor_id, "issue.cleared", issue_id, prev["title"]))
-
-    counts = Counter(c["type"] for c in candidates)
-    return {"engine": "gemini" if use_llm else "rules", "as_of": as_of.isoformat(),
-            "open": len(candidates), **{k: counts.get(k, 0) for k in TYPE_WEIGHT}}
+    @staticmethod
+    def summarize(candidates: list[dict]) -> dict:
+        counts = Counter(c["type"] for c in candidates)
+        return {"open": len(candidates), **{k: counts.get(k, 0) for k in TYPE_WEIGHT}}

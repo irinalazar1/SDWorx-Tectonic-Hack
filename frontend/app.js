@@ -12,7 +12,7 @@
   const TOPIC_CENTERS = [[230, 220], [600, 220], [970, 220], [230, 548], [600, 548], [970, 548]];
 
   const state = {
-    token: null, user: null, data: null, layout: null,
+    csrf: null, user: null, data: null, layout: null,
     t: null, days: [], filter: 'all', selected: null, playing: false, timer: null,
   };
 
@@ -35,12 +35,6 @@
     return el;
   }
 
-  const store = {
-    get(k) { try { return sessionStorage.getItem(k); } catch { return null; } },
-    set(k, v) { try { sessionStorage.setItem(k, v); } catch { /* storage unavailable */ } },
-    del(k) { try { sessionStorage.removeItem(k); } catch { /* storage unavailable */ } },
-  };
-
   const fmtDate = (iso) => iso ? new Date(iso.slice(0, 10) + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
   const fmtMonth = (iso) => new Date(iso.slice(0, 10) + 'T00:00:00').toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
   const todayIso = () => new Date().toISOString().slice(0, 10);
@@ -52,11 +46,16 @@
     return () => { x ^= x << 13; x ^= x >>> 17; x ^= x << 5; return ((x >>> 0) % 10000) / 10000; };
   }
 
+  // The session lives in an HttpOnly cookie that scripts cannot read. State-changing
+  // requests also send the CSRF token, which is only ever kept in memory.
   async function api(path, opts = {}) {
+    const method = (opts.method || 'GET').toUpperCase();
     const headers = { 'Content-Type': 'application/json' };
-    if (state.token) headers.Authorization = `Bearer ${state.token}`;
-    const res = await fetch(path, { ...opts, headers });
-    if (res.status === 401 && path !== '/api/login') { signOut(); throw new Error('Session expired'); }
+    if (method !== 'GET' && state.csrf) headers['X-CSRF-Token'] = state.csrf;
+    const res = await fetch(path, { ...opts, method, headers, credentials: 'same-origin' });
+    if (res.status === 401 && !['/api/login', '/api/me', '/api/logout'].includes(path)) {
+      resetSession(); showLogin(); throw new Error('Your session ended. Please sign in again.');
+    }
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(typeof body.detail === 'string' ? body.detail : 'Request failed');
     return body;
@@ -75,8 +74,10 @@
     const box = $('#login-users');
     box.replaceChildren();
     let users = [];
-    try { users = await api('/api/demo-users'); } catch { /* shown below */ }
+    try { users = await api('/api/demo-users'); } catch { /* demo mode off: type a username instead */ }
     let chosen = users[0]?.id;
+    $('#login-users-field').hidden = users.length === 0;
+    $('#login-username-field').hidden = users.length > 0;
     for (const u of users) {
       const opt = h('button', {
         type: 'button', class: 'user-option', role: 'radio', 'aria-checked': u.id === chosen ? 'true' : 'false',
@@ -92,18 +93,23 @@
       e.preventDefault();
       const err = $('#login-error'); err.hidden = true;
       try {
-        const res = await api('/api/login', { method: 'POST', body: JSON.stringify({ username: chosen, password: $('#login-password').value }) });
-        state.token = res.token; state.user = res.user;
-        store.set('fl_token', res.token);
+        const username = users.length ? chosen : $('#login-username').value.trim();
+        const res = await api('/api/login', { method: 'POST', body: JSON.stringify({ username, password: $('#login-password').value }) });
+        state.csrf = res.csrf_token; state.user = res.user;
         $('#login-password').value = '';
         await enterApp();
       } catch (ex) { err.textContent = ex.message; err.hidden = false; }
     };
   }
 
-  function signOut() {
-    state.token = null; state.user = null; store.del('fl_token');
+  function resetSession() {
+    state.csrf = null; state.user = null; state.data = null;
     stopPlay(); closeDrawer(); $('#doc').hidden = true;
+  }
+
+  async function signOut() {
+    try { await api('/api/logout', { method: 'POST', body: '{}' }); } catch { /* already signed out */ }
+    resetSession();
     showLogin();
   }
 
@@ -207,13 +213,13 @@
     svg.selectAll('*').remove();
     const defs = svg.append('defs');
     const terrain = defs.append('radialGradient').attr('id', 'terrain');
-    terrain.append('stop').attr('offset', '0%').attr('stop-color', '#2a1e17').attr('stop-opacity', 0.95);
-    terrain.append('stop').attr('offset', '70%').attr('stop-color', '#1a1411').attr('stop-opacity', 0.8);
-    terrain.append('stop').attr('offset', '100%').attr('stop-color', '#0c0a09').attr('stop-opacity', 0);
+    // Light, flat regions (Tailwind gray-100 / gray-50) for the enterprise theme.
+    terrain.append('stop').attr('offset', '0%').attr('stop-color', '#f3f4f6').attr('stop-opacity', 1);
+    terrain.append('stop').attr('offset', '75%').attr('stop-color', '#f9fafb').attr('stop-opacity', 0.9);
+    terrain.append('stop').attr('offset', '100%').attr('stop-color', '#ffffff').attr('stop-opacity', 0);
     const crater = defs.append('radialGradient').attr('id', 'crater');
-    crater.append('stop').attr('offset', '0%').attr('stop-color', '#000');
-    crater.append('stop').attr('offset', '70%').attr('stop-color', '#07060a');
-    crater.append('stop').attr('offset', '100%').attr('stop-color', '#2a2450');
+    crater.append('stop').attr('offset', '0%').attr('stop-color', '#0f172a');
+    crater.append('stop').attr('offset', '100%').attr('stop-color', '#1e293b');
     const glow = defs.append('filter').attr('id', 'glow').attr('x', '-50%').attr('y', '-50%').attr('width', '200%').attr('height', '200%');
     glow.append('feGaussianBlur').attr('stdDeviation', 3.5).attr('result', 'b');
     const merge = glow.append('feMerge');
@@ -612,10 +618,10 @@
       else if (!$('#drawer').hidden) closeDrawer();
     });
 
-    const token = store.get('fl_token');
-    if (!token) return showLogin();
-    state.token = token;
-    api('/api/me').then((u) => { state.user = u; return enterApp(); }).catch(() => showLogin());
+    // Resume an existing session (the cookie is sent automatically), else show sign-in.
+    api('/api/me')
+      .then((res) => { state.user = res.user; state.csrf = res.csrf_token; return enterApp(); })
+      .catch(() => showLogin());
   }
 
   document.addEventListener('DOMContentLoaded', boot);

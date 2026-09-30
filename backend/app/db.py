@@ -1,11 +1,8 @@
-"""SQLite storage. All queries in the app are parameterised."""
+"""SQLite schema and connection factory. Only the repositories module uses this."""
 from __future__ import annotations
 
 import sqlite3
-from contextlib import contextmanager
-from typing import Iterator
-
-from . import config
+from pathlib import Path
 
 SCHEMA = """
 PRAGMA foreign_keys = ON;
@@ -106,6 +103,17 @@ CREATE TABLE IF NOT EXISTS issues (
     resolution TEXT
 );
 
+-- Server-side sessions. Only a SHA-256 of the session id is stored, so a leaked
+-- database cannot be used to hijack sessions.
+CREATE TABLE IF NOT EXISTS sessions (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id),
+    created_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    revoked_at TEXT
+);
+CREATE INDEX IF NOT EXISTS sessions_user ON sessions(user_id);
+
 CREATE TABLE IF NOT EXISTS audit_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     at TEXT NOT NULL,
@@ -117,29 +125,12 @@ CREATE TABLE IF NOT EXISTS audit_log (
 """
 
 
-def connect() -> sqlite3.Connection:
-    conn = sqlite3.connect(config.DB_PATH, check_same_thread=False)
+def connect(db_path: Path) -> sqlite3.Connection:
+    conn = sqlite3.connect(db_path, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
 
-@contextmanager
-def session() -> Iterator[sqlite3.Connection]:
-    conn = connect()
-    try:
-        yield conn
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        conn.close()
-
-
 def init(conn: sqlite3.Connection) -> None:
     conn.executescript(SCHEMA)
-
-
-def split(value: str | None) -> list[str]:
-    return [v for v in (value or "").split(",") if v]

@@ -1,0 +1,3 @@
+# Fault Lines is an internal tool: nothing here should be crawled or indexed.
+User-agent: *
+Disallow: /

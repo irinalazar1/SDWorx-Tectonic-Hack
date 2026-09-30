@@ -7,17 +7,15 @@ a random one is generated and printed once.
 from __future__ import annotations
 
 import json
-import os
 import random
 import secrets
 from datetime import date, timedelta
 
-from . import config, db, detection, llm
-from .security import hash_password
+from .container import Container, build_container
 
 
-def _read(name: str):
-    return json.loads((config.DATA_DIR / name).read_text(encoding="utf-8"))
+def _read(container: Container, name: str):
+    return json.loads((container.settings.data_dir / name).read_text(encoding="utf-8"))
 
 
 def _usage_events(profiles: dict, items: dict, users: list[dict], clients: list[dict]) -> list[tuple]:
@@ -33,73 +31,54 @@ def _usage_events(profiles: dict, items: dict, users: list[dict], clients: list[
         for n in range(p["count"]):
             # Skew towards recent dates so pressure reflects current use.
             offset = int(span * (1 - rng.random() ** 1.6)) if n else span
-            day = start + timedelta(days=offset)
             events.append((item["id"], rng.choice(people)["id"], rng.choice(local_clients)["id"],
-                           day.isoformat()))
+                           (start + timedelta(days=offset)).isoformat()))
     return events
 
 
-def build(password: str | None = None, verbose: bool = True) -> dict:
-    password = password or os.environ.get("DEMO_PASSWORD")
+def build(password: str | None = None, verbose: bool = True, container: Container | None = None) -> dict:
+    container = container or build_container()
+    password = password or container.settings.demo_password
     generated = not password
     if generated:
-        password = secrets.token_urlsafe(9)
+        password = secrets.token_urlsafe(12)
+    if len(password) < container.settings.min_password_length:
+        raise SystemExit(f"DEMO_PASSWORD must be at least {container.settings.min_password_length} characters.")
 
-    if config.DB_PATH.exists():
-        config.DB_PATH.unlink()
+    db_path = container.settings.db_path
+    if db_path.exists():
+        db_path.unlink()
 
-    users = _read("users.json")
-    org = _read("org.json")
-    items = _read("items.json")
-    chats = _read("chats.json")
-    profiles = _read("usage_profiles.json")
-    items_by_id = {i["id"]: i for i in items}
+    users = _read(container, "users.json")
+    org = _read(container, "org.json")
+    items = _read(container, "items.json")
+    chats = _read(container, "chats.json")
+    profiles = _read(container, "usage_profiles.json")
 
-    use_llm = llm.available()
-    with db.session() as conn:
-        db.init(conn)
+    with container.unit_of_work() as uow:
+        uow.init_schema()
         for u in users:
-            conn.execute(
-                "INSERT INTO users (id, name, role, team, scopes, active, left_at, password_hash) "
-                "VALUES (?,?,?,?,?,?,?,?)",
-                (u["id"], u["name"], u["role"], u["team"], ",".join(u["scopes"]), int(u["active"]),
-                 u.get("left_at"), hash_password(password) if u["active"] else None))
+            uow.users.add(u, container.hasher.hash(password) if u["active"] else None)
         for c in org["clients"]:
-            conn.execute("INSERT INTO clients (id, name, country) VALUES (?,?,?)",
-                         (c["id"], c["name"], c["country"]))
+            uow.catalog.add_client(c)
         for pos, t in enumerate(org["topics"]):
-            conn.execute("INSERT INTO topics (id, label, keywords, position) VALUES (?,?,?,?)",
-                         (t["id"], t["label"], t.get("keywords", ""), pos))
+            uow.catalog.add_topic(t, pos)
         for i in sorted(items, key=lambda x: x["supersedes_id"] is not None):
-            conn.execute(
-                "INSERT INTO items (id, title, version, state, state_changed_at, owner_id, country, topic, "
-                "source, created_at, valid_from, review_by, supersedes_id, body) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                (i["id"], i["title"], i["version"], i["state"], i.get("state_changed_at"), i["owner_id"],
-                 i["country"], i["topic"], i["source"], i["created_at"], i["valid_from"], i["review_by"],
-                 i["supersedes_id"], i["body"]))
+            uow.catalog.add_item(i)
         for i in items:
             if i["supersedes_id"]:
-                conn.execute("UPDATE items SET replaced_by_id=? WHERE id=?", (i["id"], i["supersedes_id"]))
-
+                uow.catalog.link_replacement(i["supersedes_id"], i["id"])
         known_subjects = [c["subject"] for i in items for c in i["claims"]]
         for i in items:
-            claims = (llm.extract_claims(i, known_subjects) if use_llm else None) or i["claims"]
-            for c in claims:
-                conn.execute("INSERT INTO claims (item_id, subject, value, text) VALUES (?,?,?,?)",
-                             (i["id"], c["subject"], c["value"], c["text"]))
+            for claim in container.extractor.extract(i, known_subjects):
+                uow.catalog.add_claim(i["id"], claim)
         for m in chats:
-            conn.execute(
-                "INSERT INTO chats (id, author_id, channel, country, client_id, created_at, text, cites) "
-                "VALUES (?,?,?,?,?,?,?,?)",
-                (m["id"], m["author_id"], m["channel"], m["country"], m.get("client_id"), m["created_at"],
-                 m["text"], ",".join(m.get("cites", []))))
-        conn.executemany("INSERT INTO usage_events (item_id, user_id, client_id, created_at) VALUES (?,?,?,?)",
-                         _usage_events(profiles, items_by_id, users, org["clients"]))
-        summary = detection.run(conn, actor_id=None)
+            uow.catalog.add_chat(m)
+        uow.catalog.add_usage(_usage_events(profiles, {i["id"]: i for i in items}, users, org["clients"]))
+        summary = container.detection.run(uow, actor_id=None)
 
     if verbose:
-        print(f"Database built at {config.DB_PATH}")
+        print(f"Database built at {db_path}")
         print(f"Detection ({summary['engine']}): {summary}")
         if generated:
             print(f"Generated demo password for all accounts: {password}")

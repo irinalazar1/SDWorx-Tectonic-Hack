@@ -1,0 +1,22 @@
+{
+  "topics": [
+    {"id": "leave",      "label": "Leave & time off",      "keywords": "leave parental small time credit career break notice period seniority wedding"},
+    {"id": "holiday",    "label": "Holiday pay",           "keywords": "holiday pay double single vakantiegeld allowance payout departure"},
+    {"id": "sickness",   "label": "Sickness & absence",    "keywords": "sick sickness illness absence certificate guaranteed salary"},
+    {"id": "allowances", "label": "Allowances",            "keywords": "allowance remote work home commuting travel bicycle expense"},
+    {"id": "benefits",   "label": "Benefits & tax",        "keywords": "meal voucher company car benefit tax ruling expat"},
+    {"id": "pension",    "label": "Pension & retirement",  "keywords": "pension group insurance retirement premium"}
+  ],
+  "clients": [
+    {"id": "c-01", "name": "Brasserie Lindeman",  "country": "BE"},
+    {"id": "c-02", "name": "Vandaele Logistics",  "country": "BE"},
+    {"id": "c-03", "name": "Atelier Moreau",      "country": "BE"},
+    {"id": "c-04", "name": "Kempen Bouw",         "country": "BE"},
+    {"id": "c-05", "name": "Brugge Maritime",     "country": "BE"},
+    {"id": "c-06", "name": "Dijkstra Tech",       "country": "NL"},
+    {"id": "c-07", "name": "Van Leeuwen Retail",  "country": "NL"},
+    {"id": "c-08", "name": "Hollandse Zorg",      "country": "NL"},
+    {"id": "c-09", "name": "Maas Energie",        "country": "NL"},
+    {"id": "c-10", "name": "Noordwind Media",     "country": "NL"}
+  ]
+}

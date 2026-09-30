@@ -1,0 +1,22 @@
+[
+  {"id": "m-01", "author_id": "u-tom",   "channel": "payroll-be",  "country": "BE", "created_at": "2025-10-14", "client_id": "c-02", "text": "Does an employee on time credit keep building seniority for the notice period?"},
+  {"id": "m-02", "author_id": "u-eva",   "channel": "payroll-be",  "country": "BE", "created_at": "2025-12-03", "client_id": "c-04", "text": "Client asks how the notice period is calculated when someone is on time credit. Any guideline?"},
+  {"id": "m-03", "author_id": "u-ines",  "channel": "payroll-be",  "country": "BE", "created_at": "2026-02-19", "client_id": "c-01", "text": "Is the notice period based on the reduced salary during time credit or on the full-time salary?"},
+  {"id": "m-04", "author_id": "u-tom",   "channel": "payroll-be",  "country": "BE", "created_at": "2026-05-06", "client_id": "c-05", "text": "Again a question on time credit and notice period, where do we have this documented?"},
+  {"id": "m-05", "author_id": "u-eva",   "channel": "payroll-be",  "country": "BE", "created_at": "2026-08-27", "client_id": "c-03", "text": "Can someone tell me how to handle the notice period for an employee on part-time time credit?"},
+
+  {"id": "m-06", "author_id": "u-lotte", "channel": "payroll-nl",  "country": "NL", "created_at": "2026-03-04", "client_id": "c-06", "text": "Do we have a guideline for the remote work allowance for Dutch clients? Is the work from home allowance tax-free?"},
+  {"id": "m-07", "author_id": "u-noah",  "channel": "payroll-nl",  "country": "NL", "created_at": "2026-05-22", "client_id": "c-10", "text": "Client wants to pay a monthly remote work allowance to employees working from home. How do we process this in payroll?"},
+  {"id": "m-08", "author_id": "u-lotte", "channel": "payroll-nl",  "country": "NL", "created_at": "2026-09-09", "client_id": "c-07", "text": "Is there anything on home working costs or a remote work allowance in NL?"},
+
+  {"id": "m-09", "author_id": "u-ines",  "channel": "payroll-be",  "country": "BE", "created_at": "2026-02-02", "client_id": "c-01", "text": "Per the leave FAQ, parental leave does not count toward holiday entitlement, so I told the client no holiday days build up.", "cites": ["KB-BE-044"]},
+  {"id": "m-10", "author_id": "u-tom",   "channel": "payroll-be",  "country": "BE", "created_at": "2026-03-17", "client_id": "c-02", "text": "Do parental leave days count for holiday entitlement next year?"},
+  {"id": "m-11", "author_id": "u-eva",   "channel": "payroll-be",  "country": "BE", "created_at": "2026-03-17", "client_id": "c-02", "text": "The FAQ says no, parental leave is not assimilated for holidays.", "cites": ["KB-BE-044"]},
+  {"id": "m-12", "author_id": "u-ines",  "channel": "payroll-be",  "country": "BE", "created_at": "2026-06-11", "client_id": "c-04", "text": "Used the sickness guaranteed salary page, certificate is required from day one for all employees.", "cites": ["KB-BE-120"]},
+  {"id": "m-13", "author_id": "u-tom",   "channel": "payroll-be",  "country": "BE", "created_at": "2026-04-08", "client_id": "c-05", "text": "How is double holiday pay calculated for a white-collar employee?"},
+  {"id": "m-14", "author_id": "u-noah",  "channel": "payroll-nl",  "country": "NL", "created_at": "2026-04-28", "client_id": "c-08", "text": "When is the holiday allowance paid out this year, May or June?"},
+  {"id": "m-15", "author_id": "u-lotte", "channel": "payroll-nl",  "country": "NL", "created_at": "2026-04-28", "client_id": "c-08", "text": "Calendar says June, handbook says May. I went with June.", "cites": ["KB-NL-211"]},
+  {"id": "m-16", "author_id": "u-eva",   "channel": "payroll-be",  "country": "BE", "created_at": "2026-07-01", "client_id": "c-03", "text": "Are meal vouchers granted on holidays?"},
+  {"id": "m-17", "author_id": "u-noah",  "channel": "payroll-nl",  "country": "NL", "created_at": "2026-06-15", "client_id": "c-09", "text": "How much salary continues during long term illness in the Netherlands?"},
+  {"id": "m-18", "author_id": "u-tom",   "channel": "payroll-be",  "country": "BE", "created_at": "2026-01-22", "client_id": "c-01", "text": "Great, payroll run for January is closed."}
+]

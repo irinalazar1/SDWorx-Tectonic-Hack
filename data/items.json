@@ -1,0 +1,177 @@
+[
+  {
+    "id": "KB-BE-101", "title": "Parental leave and holiday entitlement (BE)", "version": 3, "state": "active",
+    "owner_id": "u-an", "country": "BE", "topic": "leave", "source": "Payroll Handbook BE",
+    "created_at": "2026-01-12", "valid_from": "2026-01-01", "review_by": "2027-01-12", "supersedes_id": null,
+    "body": "Periods of full-time or part-time parental leave are treated as assimilated days. The employee therefore continues to build up holiday entitlement for the following holiday year during parental leave. When calculating the holiday days for next year, add the parental leave days to the days actually worked. This replaces earlier guidance that excluded parental leave from the calculation.",
+    "claims": [
+      {"subject": "parental_leave.holiday_accrual", "value": "accrues", "text": "Parental leave days count as assimilated days, so holiday entitlement keeps building up."}
+    ]
+  },
+  {
+    "id": "KB-BE-044", "title": "Leave FAQ for payroll consultants (BE)", "version": 1, "state": "active",
+    "owner_id": "u-marc", "country": "BE", "topic": "leave", "source": "Consultant wiki",
+    "created_at": "2024-02-05", "valid_from": "2024-02-05", "review_by": "2025-02-05", "supersedes_id": null,
+    "body": "Frequently asked questions about leave. Q: Does parental leave count toward holiday entitlement? A: No. Parental leave days are not assimilated, so the employee does not build up holiday days during parental leave. Q: How many days of small leave for a wedding? A: Two days for the employee's own wedding. Q: Who approves leave requests? A: The direct manager, recorded in the time registration tool.",
+    "claims": [
+      {"subject": "parental_leave.holiday_accrual", "value": "does_not_accrue", "text": "Parental leave days are not assimilated; no holiday entitlement is built up."},
+      {"subject": "small_leave.wedding_days", "value": "2", "text": "Two days of small leave for the employee's own wedding."}
+    ]
+  },
+  {
+    "id": "KB-BE-102", "title": "Small leave (klein verlet) events (BE)", "version": 1, "state": "active",
+    "owner_id": "u-an", "country": "BE", "topic": "leave", "source": "Payroll Handbook BE",
+    "created_at": "2025-05-20", "valid_from": "2025-05-20", "review_by": "2026-11-20", "supersedes_id": null,
+    "body": "Small leave (klein verlet) is paid short leave for family events. The employee receives two days for their own wedding, one day for the wedding of a child, and three days for the death of a spouse or child. Days must be taken around the date of the event. Record small leave with code KV in the time registration tool.",
+    "claims": [
+      {"subject": "small_leave.wedding_days", "value": "2", "text": "Two days of small leave for the employee's own wedding."}
+    ]
+  },
+  {
+    "id": "KB-NL-201", "title": "Parental leave (ouderschapsverlof) (NL)", "version": 2, "state": "active",
+    "owner_id": "u-jeroen", "country": "NL", "topic": "leave", "source": "Payroll Handbook NL",
+    "created_at": "2025-08-01", "valid_from": "2025-08-01", "review_by": "2026-12-01", "supersedes_id": null,
+    "body": "Employees in the Netherlands are entitled to 26 times their weekly working hours of parental leave per child. Nine weeks of this leave are partially paid by the UWV during the first year of the child. The employer registers the leave in payroll so the benefit application can be submitted on time.",
+    "claims": [
+      {"subject": "nl.parental_leave.entitlement", "value": "26x_weekly_hours", "text": "26 times the weekly working hours of parental leave per child."}
+    ]
+  },
+  {
+    "id": "KB-BE-110", "title": "Holiday pay calculation: single and double (BE)", "version": 2, "state": "active",
+    "owner_id": "u-an", "country": "BE", "topic": "holiday", "source": "Payroll Handbook BE",
+    "created_at": "2025-09-02", "valid_from": "2025-09-02", "review_by": "2027-03-02", "supersedes_id": null,
+    "body": "White-collar employees receive single holiday pay as their normal salary during holidays. Double holiday pay equals 92 percent of the gross monthly salary and is paid once a year, usually with the May or June payroll. Blue-collar employees receive their holiday pay from the holiday fund instead of the employer. For employees who leave, calculate the departure holiday pay on the gross salary earned in the current year.",
+    "claims": [
+      {"subject": "be.double_holiday_pay.rate", "value": "92_percent", "text": "Double holiday pay equals 92 percent of the gross monthly salary."}
+    ]
+  },
+  {
+    "id": "KB-BE-310", "title": "Onboarding checklist: holiday pay basics", "version": 1, "state": "active",
+    "owner_id": "u-pieter", "country": "BE", "topic": "holiday", "source": "HR Ops onboarding pack",
+    "created_at": "2026-03-10", "valid_from": "2026-03-10", "review_by": "2027-03-10", "supersedes_id": null,
+    "body": "Holiday pay basics for new consultants. White-collar employees receive single holiday pay as their normal salary during holidays. Double holiday pay equals 92 percent of the gross monthly salary and is paid once a year, usually with the May or June payroll. Blue-collar employees receive their holiday pay from the holiday fund instead of the employer. For employees who leave, calculate the departure holiday pay on the gross salary earned in the current year.",
+    "claims": [
+      {"subject": "be.double_holiday_pay.rate", "value": "92_percent", "text": "Double holiday pay equals 92 percent of the gross monthly salary."}
+    ]
+  },
+  {
+    "id": "KB-NL-210", "title": "Holiday allowance (vakantiegeld) payout (NL)", "version": 1, "state": "active",
+    "owner_id": "u-jeroen", "country": "NL", "topic": "holiday", "source": "Payroll Handbook NL",
+    "created_at": "2025-04-01", "valid_from": "2025-04-01", "review_by": "2026-10-01", "supersedes_id": null,
+    "body": "The holiday allowance (vakantiegeld) is at least 8 percent of the gross annual salary. It is built up from June to May and paid out in one amount with the May payroll run, unless the collective agreement says otherwise. Employees who leave receive the accrued allowance with their final payslip.",
+    "claims": [
+      {"subject": "nl.holiday_allowance.rate", "value": "8_percent", "text": "Holiday allowance is at least 8 percent of the gross annual salary."},
+      {"subject": "nl.holiday_allowance.payout_month", "value": "may", "text": "Holiday allowance is paid out with the May payroll run."}
+    ]
+  },
+  {
+    "id": "KB-NL-211", "title": "Payroll calendar 2026 (NL)", "version": 1, "state": "active",
+    "owner_id": "u-sofie", "country": "NL", "topic": "holiday", "source": "Operations calendar",
+    "created_at": "2026-02-15", "valid_from": "2026-01-01", "review_by": "2027-01-01", "supersedes_id": null,
+    "body": "Key payroll dates for Dutch clients in 2026. Monthly payroll cut-off is the 20th. The holiday allowance of 8 percent is paid out with the June payroll run for all standard clients. The year-end bonus run takes place in December. Annual statements are sent in January.",
+    "claims": [
+      {"subject": "nl.holiday_allowance.rate", "value": "8_percent", "text": "Holiday allowance of 8 percent."},
+      {"subject": "nl.holiday_allowance.payout_month", "value": "june", "text": "Holiday allowance is paid out with the June payroll run."}
+    ]
+  },
+  {
+    "id": "KB-BE-120", "title": "Guaranteed salary during sickness (BE)", "version": 2, "state": "deprecated",
+    "owner_id": "u-an", "country": "BE", "topic": "sickness", "source": "Payroll Handbook BE",
+    "created_at": "2024-06-01", "valid_from": "2024-06-01", "review_by": "2025-06-01", "supersedes_id": null,
+    "state_changed_at": "2025-11-03",
+    "body": "During the first 30 days of illness, a white-collar employee receives guaranteed salary from the employer. From day 31 the health insurance fund takes over. A medical certificate is required from the first day of illness for all employees.",
+    "claims": [
+      {"subject": "be.sickness.certificate_first_day", "value": "required_day_one", "text": "A medical certificate is required from the first day of illness."}
+    ]
+  },
+  {
+    "id": "KB-BE-121", "title": "Guaranteed salary during sickness (BE)", "version": 3, "state": "active",
+    "owner_id": "u-an", "country": "BE", "topic": "sickness", "source": "Payroll Handbook BE",
+    "created_at": "2025-11-03", "valid_from": "2025-11-03", "review_by": "2026-11-03", "supersedes_id": "KB-BE-120",
+    "body": "During the first 30 days of illness, a white-collar employee receives guaranteed salary from the employer. From day 31 the health insurance fund takes over. Employees may be absent for one day without a medical certificate up to three times per calendar year, unless the company has fewer than 50 employees. Check the absence code before approving the guaranteed salary.",
+    "claims": [
+      {"subject": "be.sickness.certificate_first_day", "value": "exempt_three_times", "text": "One-day absences without certificate are allowed three times per year."}
+    ]
+  },
+  {
+    "id": "KB-NL-220", "title": "Salary continuation during illness (NL)", "version": 1, "state": "active",
+    "owner_id": "u-jeroen", "country": "NL", "topic": "sickness", "source": "Payroll Handbook NL",
+    "created_at": "2025-03-12", "valid_from": "2025-03-12", "review_by": "2026-12-12", "supersedes_id": null,
+    "body": "Under Dutch law the employer continues to pay at least 70 percent of the salary for up to two years of illness (loondoorbetaling). In the first year pay may not drop below the minimum wage. Register the sick report on the first day so the occupational health service is informed.",
+    "claims": [
+      {"subject": "nl.sickness.salary_continuation", "value": "70_percent_two_years", "text": "At least 70 percent salary for up to two years."}
+    ]
+  },
+  {
+    "id": "KB-BE-130", "title": "Remote work allowance (BE)", "version": 1, "state": "active",
+    "owner_id": "u-pieter", "country": "BE", "topic": "allowances", "source": "HR Ops guidelines",
+    "created_at": "2023-10-01", "valid_from": "2023-10-01", "review_by": "2025-06-30", "supersedes_id": null,
+    "body": "Employees who work from home on a structural basis can receive a tax-free remote work allowance for office costs. The monthly remote work allowance is paid as a lump sum with the salary and is not subject to social security contributions when the conditions are met. The employer defines the eligible home working days in a written policy.",
+    "claims": [
+      {"subject": "be.remote_work_allowance.tax", "value": "tax_free", "text": "Remote work allowance is tax-free when conditions are met."}
+    ]
+  },
+  {
+    "id": "KB-BE-131", "title": "Commuting allowance (BE)", "version": 1, "state": "active",
+    "owner_id": "u-pieter", "country": "BE", "topic": "allowances", "source": "HR Ops guidelines",
+    "created_at": "2025-02-10", "valid_from": "2025-02-10", "review_by": "2026-12-10", "supersedes_id": null,
+    "body": "Employers contribute to public transport commuting costs according to the sector agreement. The bicycle allowance is paid per kilometre cycled between home and work. Register commuting days monthly so the allowance can be calculated in payroll.",
+    "claims": [
+      {"subject": "be.bicycle_allowance.basis", "value": "per_km", "text": "Bicycle allowance is paid per kilometre."}
+    ]
+  },
+  {
+    "id": "KB-NL-230", "title": "Travel expense reimbursement (NL)", "version": 1, "state": "active",
+    "owner_id": "u-jeroen", "country": "NL", "topic": "allowances", "source": "Payroll Handbook NL",
+    "created_at": "2025-06-18", "valid_from": "2025-06-18", "review_by": "2026-12-18", "supersedes_id": null,
+    "body": "Dutch employers can reimburse commuting travel tax-free up to the legal amount per kilometre under the work-related costs scheme (werkkostenregeling). Public transport tickets can be reimbursed at actual cost. Record reimbursements in the payroll run of the month the costs were made.",
+    "claims": [
+      {"subject": "nl.travel.reimbursement", "value": "tax_free_per_km", "text": "Commuting travel reimbursement is tax-free up to the legal amount per kilometre."}
+    ]
+  },
+  {
+    "id": "KB-BE-140", "title": "Meal vouchers (BE)", "version": 2, "state": "active",
+    "owner_id": "u-an", "country": "BE", "topic": "benefits", "source": "Payroll Handbook BE",
+    "created_at": "2025-07-07", "valid_from": "2025-07-07", "review_by": "2026-12-07", "supersedes_id": null,
+    "body": "Meal vouchers are granted per day actually worked. The employee contribution is deducted from net pay and the vouchers are loaded on the electronic card at the start of the next month. Days of absence, including holidays and illness, do not give right to a meal voucher.",
+    "claims": [
+      {"subject": "be.meal_vouchers.basis", "value": "per_day_worked", "text": "Meal vouchers are granted per day actually worked."}
+    ]
+  },
+  {
+    "id": "KB-BE-150", "title": "Company car benefit in kind (BE)", "version": 1, "state": "active",
+    "owner_id": "u-an", "country": "BE", "topic": "benefits", "source": "Payroll Handbook BE",
+    "created_at": "2025-01-20", "valid_from": "2025-01-20", "review_by": "2026-12-20", "supersedes_id": null,
+    "body": "A company car that is also used privately creates a taxable benefit in kind. The benefit is calculated from the catalogue value, the CO2 emissions and the age of the car, and is added to the taxable salary every month.",
+    "claims": [
+      {"subject": "be.company_car.benefit_basis", "value": "catalogue_co2_age", "text": "Benefit in kind based on catalogue value, CO2 and age."}
+    ]
+  },
+  {
+    "id": "KB-NL-240", "title": "30% ruling for expats (NL)", "version": 2, "state": "active",
+    "owner_id": "u-jeroen", "country": "NL", "topic": "benefits", "source": "Payroll Handbook NL",
+    "created_at": "2025-01-15", "valid_from": "2025-01-01", "review_by": "2026-12-15", "supersedes_id": null,
+    "body": "Qualifying employees recruited from abroad can receive part of their salary as a tax-free allowance for extraterritorial costs. Check the salary threshold and the approval decision of the tax authority before applying the ruling in payroll.",
+    "claims": [
+      {"subject": "nl.expat_ruling.requires_approval", "value": "yes", "text": "Tax authority approval is required before applying the ruling."}
+    ]
+  },
+  {
+    "id": "KB-NL-250", "title": "Pension contributions (NL)", "version": 1, "state": "active",
+    "owner_id": "u-jeroen", "country": "NL", "topic": "pension", "source": "Payroll Handbook NL",
+    "created_at": "2025-05-05", "valid_from": "2025-05-05", "review_by": "2026-11-05", "supersedes_id": null,
+    "body": "Pension contributions are split between employer and employee according to the pension fund rules. The employee share is deducted from gross salary before wage tax. Report pension data to the fund monthly.",
+    "claims": [
+      {"subject": "nl.pension.employee_share_pretax", "value": "yes", "text": "Employee pension share is deducted before wage tax."}
+    ]
+  },
+  {
+    "id": "KB-BE-160", "title": "Group insurance (BE)", "version": 1, "state": "active",
+    "owner_id": "u-pieter", "country": "BE", "topic": "pension", "source": "HR Ops guidelines",
+    "created_at": "2025-04-14", "valid_from": "2025-04-14", "review_by": "2026-10-14", "supersedes_id": null,
+    "body": "The supplementary pension is organised through a group insurance. The employer premium is not taxable for the employee. Employee contributions, if any, are deducted from gross salary each month.",
+    "claims": [
+      {"subject": "be.group_insurance.employer_premium_tax", "value": "not_taxable", "text": "Employer premium is not taxable for the employee."}
+    ]
+  }
+]

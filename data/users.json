@@ -1,0 +1,12 @@
+[
+  {"id": "u-an",     "name": "An Peeters",     "role": "owner",      "team": "Payroll Belgium",       "scopes": ["BE"],       "active": true},
+  {"id": "u-jeroen", "name": "Jeroen de Vries", "role": "owner",      "team": "Payroll Netherlands",   "scopes": ["NL"],       "active": true},
+  {"id": "u-sofie",  "name": "Sofie Claes",    "role": "owner",      "team": "Knowledge Management",  "scopes": ["BE", "NL"], "active": true},
+  {"id": "u-pieter", "name": "Pieter Wouters", "role": "owner",      "team": "HR Operations Belgium", "scopes": ["BE"],       "active": true},
+  {"id": "u-marc",   "name": "Marc Dubois",    "role": "owner",      "team": "Payroll Belgium",       "scopes": ["BE"],       "active": false, "left_at": "2025-03-31"},
+  {"id": "u-tom",    "name": "Tom Janssens",   "role": "consultant", "team": "Payroll Consulting BE", "scopes": ["BE"],       "active": true},
+  {"id": "u-eva",    "name": "Eva Maes",       "role": "consultant", "team": "Payroll Consulting BE", "scopes": ["BE"],       "active": true},
+  {"id": "u-ines",   "name": "Ines Jacobs",    "role": "consultant", "team": "Payroll Consulting BE", "scopes": ["BE"],       "active": true},
+  {"id": "u-lotte",  "name": "Lotte Bakker",   "role": "consultant", "team": "Payroll Consulting NL", "scopes": ["NL"],       "active": true},
+  {"id": "u-noah",   "name": "Noah Visser",    "role": "consultant", "team": "Payroll Consulting NL", "scopes": ["NL"],       "active": true}
+]

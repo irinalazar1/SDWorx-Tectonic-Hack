@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fault Lines</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="vendor/d3.min.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <!-- Sign in -->
+  <section id="login" class="login" hidden>
+    <div class="login-card">
+      <div class="brand brand-lg"><span class="brand-mark" aria-hidden="true"></span>Fault Lines</div>
+      <p class="login-pitch">See where your organisation's knowledge is cracking, before someone falls through.</p>
+      <form id="login-form" autocomplete="off">
+        <label class="field-label">Sign in as</label>
+        <div id="login-users" class="login-users" role="radiogroup"></div>
+        <label class="field-label" for="login-password">Demo password</label>
+        <input id="login-password" type="password" required maxlength="256" autocomplete="current-password">
+        <p id="login-error" class="error" hidden></p>
+        <button type="submit" class="btn btn-primary btn-block">Enter the map</button>
+      </form>
+      <p class="fineprint">Synthetic data only. No real SD Worx or client information.</p>
+    </div>
+  </section>
+
+  <!-- App -->
+  <div id="app" class="app" hidden>
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Fault Lines</div>
+      <div class="topbar-sub">Seismic map of payroll knowledge</div>
+      <div class="topbar-right">
+        <span id="scope-chips" class="chips"></span>
+        <span id="user-chip" class="user-chip"></span>
+        <button id="logout" class="btn btn-ghost btn-sm" type="button">Sign out</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="stage">
+        <div id="kpis" class="kpis"></div>
+        <div class="map-wrap">
+          <svg id="map" role="img" aria-label="Map of knowledge topics with detected issues"></svg>
+          <div id="tooltip" class="tooltip" hidden></div>
+          <div class="legend">
+            <span><i class="lg lg-conflict"></i>Conflict</span>
+            <span><i class="lg lg-duplicate"></i>Duplicate</span>
+            <span><i class="lg lg-outdated"></i>Outdated</span>
+            <span><i class="lg lg-missing"></i>Gap</span>
+            <span><i class="lg lg-node"></i>Knowledge item</span>
+          </div>
+        </div>
+        <div class="timeline">
+          <button id="play" class="btn btn-icon" type="button" aria-label="Play time-lapse">▶</button>
+          <div class="timeline-track">
+            <input id="time" type="range" min="0" max="100" value="100" aria-label="Time">
+            <div id="time-ticks" class="time-ticks"></div>
+          </div>
+          <div class="timeline-date"><span id="time-label"></span><small id="time-sub"></small></div>
+        </div>
+      </section>
+
+      <aside class="side">
+        <div class="side-head">
+          <h2>Tremors</h2>
+          <span class="side-hint">ranked by pressure</span>
+        </div>
+        <div id="filters" class="filters"></div>
+        <ol id="issue-list" class="issue-list"></ol>
+        <details class="closed">
+          <summary>Closed <span id="closed-count"></span></summary>
+          <ol id="closed-list" class="issue-list issue-list-closed"></ol>
+        </details>
+      </aside>
+    </main>
+
+    <div id="drawer-backdrop" class="backdrop" hidden></div>
+    <aside id="drawer" class="drawer" hidden aria-live="polite"></aside>
+    <div id="doc" class="modal" hidden></div>
+    <div id="toast" class="toast" hidden></div>
+  </div>
+</body>
+</html>

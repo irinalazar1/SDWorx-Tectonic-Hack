@@ -33,23 +33,26 @@ Every issue also has **its own lifecycle** (`detected → assigned → resolved 
 
 ## Features
 
-- **The map**: topics as terrain, documents as nodes (Belgium white, Netherlands blue, size = usage), issues drawn as fault lines, echoes, erosion rings and craters. Regions glow hotter as pressure rises.
-- **Time-lapse**: drag the slider or press ▶ to watch knowledge drift over three years: a policy gets copied, one copy is updated, and a fault line opens.
-- **Issue drawer**: both sides of a conflict side by side, the exact statements that disagree, owners, review dates, usage per month, affected clients, and the story of how the problem formed.
-- **Resolve at the source**: keep one version, retire, reconfirm and take over ownership, assign a gap to yourself, or accept with a documented reason.
-- **Trust badges in context**: open any document and immediately see whether it is contradicted, outdated, orphaned or replaced by a newer version.
-- **Roles and scopes**: consultants see their own country read-only; knowledge owners resolve issues within their scope.
+- **Knowledge health overview**: four counters (conflicts, duplicates, outdated, gaps) that also work as filters.
+- **Knowledge map**: six topic areas, each with its documents as nodes (Belgium dark outline, Netherlands blue, size = usage). Issues are drawn on top: red fault lines, dashed amber echoes, dashed erosion rings and dark craters. The contour lines of a topic turn red when an issue there is under high pressure. Hover for details, click to open.
+- **Time-lapse**: drag the slider under the map or press ▶ to watch three years of knowledge drift: a policy gets copied, one copy is updated, and a fault line opens.
+- **Issue ledger**: every open issue ranked by pressure, with tabs per type and a list of closed issues.
+- **Issue detail**: both sides of a conflict next to each other, the exact statements that disagree, owners, review dates, usage per month, affected clients, and a timeline of how the problem formed.
+- **Resolve at the source**: keep one version, retire, reconfirm and take over ownership, assign a gap to yourself, or accept it with a written reason.
+- **Warnings in context**: open any document and a banner tells you straight away if it is contradicted, outdated, replaced or has no active owner.
+- **Roles and scopes**: consultants see their own country, read-only. Knowledge owners resolve issues within their own scope.
+- **SD Worx look**: styled after SD Worx's own web design: Inter type, slate text, near-black buttons, blue for selection and 4px corners. Light theme, works on mobile.
 
 ## Demo walkthrough (3 minutes)
 
 Sign in as **Sofie Claes** (knowledge owner, BE + NL).
 
-1. **The map.** Two red fault lines, one echo, three eroding documents and two craters. The top tremor is *parental leave holiday accrual* (pressure 77).
-2. **Open it.** The old consultant FAQ says parental leave does *not* build up holiday entitlement; the current handbook says it *does*. The FAQ's owner left in 2025 and it's still used weekly for 5 clients.
-3. **Time-lapse.** Press ▶: the FAQ goes stale in 2025, the new policy lands in January 2026, and the fault line opens.
-4. **In context.** Open the FAQ document: a red banner warns it is contradicted, orphaned and overdue for review.
-5. **Resolve.** Keep the handbook version. The crack closes, the FAQ turns deprecated, and the related "outdated" issue clears on its own.
-6. **The crater.** Consultants asked five times about *time credit and notice period* over the past year, and no document answers it. The knowledge lives in people's heads. Assign it to yourself.
+1. **Knowledge health.** The counters show 2 conflicts, 1 duplicate, 3 outdated documents and 2 gaps. On the map you see two red fault lines, one echo, three erosion rings and two craters. At the top of the issue ledger: *Conflicting answers: parental leave holiday accrual* (pressure 77).
+2. **Open it.** The old consultant FAQ says parental leave does *not* build up holiday entitlement; the current handbook says it *does*. The FAQ's owner left the company in 2025 and its review is long overdue. Together the two documents were used 25 times for 5 clients in the last 90 days.
+3. **Time-lapse.** Press ▶ under the map: the FAQ goes stale in 2025, the new policy lands in January 2026, and the fault line opens.
+4. **In context.** Click the FAQ on the map (BE-044): a red banner warns that its owner has left, that it conflicts with another document, and that it is outdated.
+5. **Resolve.** In the issue, choose *Keep BE-101 v3, deprecate the other*. The fault line disappears, the FAQ becomes deprecated, and its "outdated" issue closes on its own ("1 related issue cleared too").
+6. **The crater.** Open *Knowledge gap: notice period · time credit*. Consultants asked about it five times in a year and no document answers it: the knowledge lives in people's heads. Click *I'll write it (assign to me)*.
 
 ## Run it
 
@@ -70,7 +73,7 @@ DEMO_PASSWORD=at-least-10-characters
 SECRET_KEY=paste-a-long-random-string   # python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
-`DEMO_MODE=true` (already set in `.env.example`) lists the demo accounts on the sign-in screen. With it off, you type a username such as `u-sofie`.
+`DEMO_MODE=true` (already set in `.env.example`) lists the demo accounts on the sign-in screen. With it off, you type a username such as `u-sofie`. Turn it off anywhere the app is publicly reachable.
 
 Build the database and start the app:
 
@@ -89,7 +92,9 @@ Open **http://localhost:8000** in Chrome or Firefox, pick an account and sign in
 | Tom Janssens | Consultant (read-only) | BE |
 | Lotte Bakker | Consultant (read-only) | NL |
 
-Run `python -m backend.app.seed` again at any time to reset the demo.
+Usernames are the ids in `data/users.json` (e.g. `u-sofie`, `u-an`, `u-tom`). Marc Dubois is in the data as an owner who left the company, so he cannot sign in.
+
+Run `python -m backend.app.seed` again at any time to reset the demo (stop the server first).
 
 ### Optional: Gemini on Vertex AI
 
@@ -118,6 +123,8 @@ Re-run the seed; it prints `Detection (gemini)` when Gemini is active. If Gemini
 pip install -r requirements-dev.txt
 python -m pytest -q
 ```
+
+49 tests in total:
 
 - `tests/test_detection.py` is the **answer key**: every problem deliberately planted in `/data` must be found, and nothing else. It also checks the resolve cascade.
 - `tests/test_security.py` covers what Aikido's AI Code Audit checks, through the API: authentication (sessions, logout, cookie flags, throttling, enumeration), CSRF, authorization and IDOR, business logic (double resolve, assignment stealing), input validation and hardening.
@@ -190,7 +197,7 @@ backend/app/
     policy.py      AccessPolicy: who may view or resolve what
     hashing.py     PBKDF2 password hasher
     tokens.py      HMAC-signed expiring tokens
-    throttle.py    login throttling
+    throttle.py    login throttling and request rate limiting
   detection.py     pure detection engine: the four detectors + pressure score
   judges.py        rule and Gemini conflict judges / claim extractors
   llm.py           thin Gemini (Vertex AI) client
@@ -199,11 +206,18 @@ backend/app/
   seed.py          builds the database from /data
   textsim.py       dependency-free TF-IDF similarity
 data/              synthetic payroll knowledge for Belgium and the Netherlands
-frontend/          index.html, app.js, styles.css, vendor/d3.min.js
+frontend/
+  index.html       page structure
+  app.js           map (D3), time-lapse, ledger, issue detail, document viewer
+  styles.css       SD Worx-style design tokens and components
+  robots.txt       keeps search engines out
+  vendor/          D3 and the Inter font (OFL licence), served locally
 tests/             answer key, API security tests, dependency-injection tests
+SECURITY.md        every security control, where it lives and which test covers it
+requirements*.txt  pinned runtime, test (-dev) and Gemini dependencies
 ```
 
-**Stack:** Python, FastAPI, SQLite, D3.js, vanilla JavaScript. Optional: Gemini on Google Cloud Vertex AI.
+**Stack:** Python, FastAPI, SQLite, D3.js, vanilla JavaScript, Inter. No build step and no external requests at runtime. Optional: Gemini on Google Cloud Vertex AI.
 
 ## Security
 
@@ -212,7 +226,7 @@ Built around the four areas Aikido's AI Code Audit checks: business logic, IDOR,
 - **Authentication:** PBKDF2 passwords (600k iterations), server-side revocable sessions in an HttpOnly, Secure, SameSite=Strict cookie, working logout, login throttling, no user enumeration, and an audit log of every sign-in.
 - **Authorization and IDOR:** one `AccessPolicy` for every rule; out-of-scope ids look exactly like missing ones; responses never leak ids from other scopes; CSRF tokens on every write.
 - **Business logic:** atomic resolution (no double resolve, no race), no assignment stealing, only valid actions per issue type, written reasons for exceptions.
-- **Hardening:** constant SQL with bound parameters only, strict input patterns, rate limiting, strict CSP and security headers, pinned dependencies, no secrets in the repo.
+- **Hardening:** constant SQL with bound parameters only, strict input patterns, rate limiting, strict CSP and security headers, `robots.txt` plus `noindex`, pinned dependencies, no secrets in the repo.
 
 ## Data
 
@@ -224,4 +238,5 @@ All data in `/data` is **synthetic**: fictional clients, people and simplified p
 - The Gemini engine is implemented and falls back safely, but the demo uses the rules engine and Gemini has not been evaluated on real documents.
 - Gap detection groups questions with simple text similarity; embeddings would group paraphrases better.
 - No notifications yet. Next step: push new high-pressure issues to the owner in Teams.
-- Dark theme only.
+- Rate limiting and login throttling are kept in memory, so they reset on restart and are per server. A shared store such as Redis would be needed for several servers.
+- Light theme only, no dark mode.
